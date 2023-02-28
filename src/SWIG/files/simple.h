@@ -1,0 +1,1 @@
+void saxpy(double* x, int sizex, double* y, int sizey, double* z, int sizez, float a);
