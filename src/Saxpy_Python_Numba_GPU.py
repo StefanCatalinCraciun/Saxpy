@@ -52,6 +52,7 @@ for it in range(iterations):
         start = timeit.default_timer()
         
         saxpy_kernel[blocks_per_grid, threads_per_block](a, x, y)
+        cp.cuda.Device().synchronize()
 
         end = timeit.default_timer()
 

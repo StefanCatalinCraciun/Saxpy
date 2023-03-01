@@ -44,6 +44,7 @@ for it in range(iterations):
         start = timeit.default_timer()
 
         saxpy(a,x,y)
+        cp.cuda.Device().synchronize()
 
         end = timeit.default_timer()
 

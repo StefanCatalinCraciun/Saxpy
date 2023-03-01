@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <omp.h>
+#include <openacc.h>
+
 
 void saxpy(float* x, float* y, float a, long long size) {
-    #pragma acc parallel loop
+    #pragma acc kernels loop gang, vector(256)
     for (long long i = 0; i < size; i++) {
         y[i] = a * x[i] + y[i];
     }
@@ -19,9 +20,8 @@ double get_time() {
 int main() {
 
     int n = 28;
-    int iterations = 10;
+    int iterations = 1;
     float a = 3.1415f;
-    omp_set_num_threads(3);
 
     double timings[n][iterations];
 
@@ -43,9 +43,9 @@ int main() {
             }
 
             double start_time = get_time();
-            #pragma acc data copyin(x[0:size]) copy(y[0:size]){
+            
             saxpy(x, y, a, size);
-            }
+            
             double end_time = get_time();
 
 
@@ -80,7 +80,7 @@ int main() {
         printf("Average time for size %d: %.15lf seconds\n", z, Average_Time[z]/iterations);
     }
 
-    FILE *outfile = fopen("Benchmark_Results/Saxpy_C_For_Loop_Multithread_CPU.csv", "w");
+    FILE *outfile = fopen("Benchmark_Results/Saxpy_C_OpenAcc_GPU.csv", "w");
 
     for (int z = 0; z < n; z++) {
         fprintf(outfile, "%.15lf ", Average_Time[z]/iterations);

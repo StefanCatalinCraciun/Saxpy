@@ -4,11 +4,11 @@
 #include <cuda.h>
 
 
-__global__ void saxpy(float* x, float* y, float a, long long size) {
-    int i = threadIdx.x;
-    y[i] = a * x[i] + y[i];
-    printf("%f\n", y[0]);
-    printf("\n");
+__global__ void saxpy(float *x, float *y, float a, long long size )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < size)
+        y[i] = a * x[i] + y[i];
 }
 
 double get_time() {
@@ -19,7 +19,7 @@ double get_time() {
 
 int main() {
 
-    int n = 28;
+    int n = 29;
     int iterations = 1;
     float a = 3.1415f;
 
@@ -43,10 +43,10 @@ int main() {
             }
 
 
-            printf("%f\n", x[0]);
-            printf("\n");
-            printf("%f\n", y[0]);
-            printf("\n");
+            //printf("%f\n", x[0]);
+            //printf("\n");
+            //printf("%f\n", y[0]);
+            //printf("\n");
 
             float* d_x, *d_y;
             cudaMalloc(&d_x, size * sizeof(float));
@@ -55,9 +55,12 @@ int main() {
             cudaMemcpy(d_x, x, size * sizeof(float), cudaMemcpyHostToDevice);
             cudaMemcpy(d_y, y, size * sizeof(float), cudaMemcpyHostToDevice);
 
+            int threadsPerBlock = 1024;
+            int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+
 
             double start_time = get_time();
-            saxpy<<<1,size>>>(d_x, d_y, a, size);
+            saxpy<<<blocksPerGrid, threadsPerBlock>>>(d_x, d_y, a, size);
 
             cudaError_t err = cudaGetLastError();
             if (err != cudaSuccess) {
@@ -71,8 +74,8 @@ int main() {
             cudaMemcpy(y, d_y, size * sizeof(float), cudaMemcpyDeviceToHost);
 
            
-            printf("%f\n", y[0]);
-            printf("\n");
+            //printf("%f\n", y[0]);
+            //printf("\n");
 
 
             double elapsed= end_time - start_time;

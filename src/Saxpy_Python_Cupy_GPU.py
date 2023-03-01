@@ -16,25 +16,25 @@ import cupy as cp
 import timeit
 np.set_printoptions(suppress = True) # deactivates scientific number format
 
+
 ### For shared memory
 #pool = cp.cuda.MemoryPool(cp.cuda.malloc_managed)
 #cp.cuda.set_allocator(pool.malloc)
 
-def saxpy(size):
-    x = 10*cp.random.rand(size).astype(cp.float32)
-    y = 10*cp.random.rand(size).astype(cp.float32)
-    print (x[0])
-    print (y[0])
-    start = timeit.default_timer()
+def saxpy(a,x,y):
+    #x = 10*cp.random.rand(size).astype(cp.float32)
+    #y = 10*cp.random.rand(size).astype(cp.float32)
+    #print (x[0])
+    #print (y[0])
+    #start = timeit.default_timer()
     y = a * x + y
-    end = timeit.default_timer()
+    #end = timeit.default_timer()
     #print('sssssssssssssssssssss',x.size)
     #print(y[0])
     del x 
     del y
     cp._default_memory_pool.free_all_blocks()
 
-    return (end-start)
 
 N = 2** np.arange(1,elements+1,1)
 a = 3.1415
@@ -55,9 +55,21 @@ for it in range(iterations):
         #print(mempool.used_bytes() )     
         #print(mempool.total_bytes())       
         #print(pinned_mempool.n_free_blocks())   
-        #print(mempool.n_free_blocks())  
+        #print(mempool.n_free_blocks()) 
+
+        x = 10*cp.random.rand(size).astype(cp.float32)
+        y = 10*cp.random.rand(size).astype(cp.float32)
+
+        start = timeit.default_timer()
+
+        saxpy(a,x,y)
+
+        cp.cuda.Device().synchronize()
         
-        Time[it,counter] = (saxpy(size))
+
+        end = timeit.default_timer() 
+        
+        Time[it, counter] = (end - start)*1000
         print(counter)
         counter = counter + 1
     print(it)
